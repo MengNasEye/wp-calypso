@@ -31,7 +31,6 @@ export function fetchLicenses( dispatch: ReduxDispatch, getState: () => PartnerP
 		createRequestAction(
 			{
 				type: JETPACK_PARTNER_PORTAL_LICENSES_REQUEST,
-				keyId: getActivePartnerKey( getState() ),
 			},
 			getState()
 		)

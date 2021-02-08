@@ -17,7 +17,7 @@ import QueryJetpackPartnerPortalLicenses from 'calypso/components/data/query-jet
 import {
 	hasFetchedLicenses,
 	isFetchingLicenses,
-	getLicenses,
+	getPaginatedLicenses,
 } from 'calypso/state/partner-portal/licenses/selectors';
 
 /**
@@ -29,7 +29,7 @@ export default function LicenseList(): ReactElement {
 	const translate = useTranslate();
 	const hasFetched = useSelector( hasFetchedLicenses );
 	const isFetching = useSelector( isFetchingLicenses );
-	const licenses = useSelector( getLicenses );
+	const licenses = useSelector( getPaginatedLicenses );
 
 	return (
 		<div className="license-list">
@@ -54,21 +54,21 @@ export default function LicenseList(): ReactElement {
 
 			{ hasFetched &&
 				licenses &&
-				licenses.map( ( license ) => (
+				licenses.items.map( ( license ) => (
 					<LicensePreview
 						key={ license.licenseKey }
 						licenseKey={ license.licenseKey }
-						domain={ license.domain }
 						product={ license.product }
+						username={ license.username }
+						blogId={ license.blogId }
+						siteUrl={ license.siteUrl }
 						issuedAt={ license.issuedAt }
 						attachedAt={ license.attachedAt }
 						revokedAt={ license.revokedAt }
-						username={ license.username }
-						blogId={ license.blogId }
 					/>
 				) ) }
 
-			{ hasFetched && licenses.length === 0 && (
+			{ hasFetched && licenses && licenses.items.length === 0 && (
 				<Card className="license-list__message" compact>
 					{ translate( 'No licenses found.' ) }
 				</Card>

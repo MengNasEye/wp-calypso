@@ -3,7 +3,6 @@
  */
 import { AnyAction } from 'redux';
 import { translate } from 'i18n-calypso';
-import shuffle from 'lodash/shuffle';
 
 /**
  * Internal dependencies
@@ -12,8 +11,8 @@ import {
 	JETPACK_PARTNER_PORTAL_LICENSES_REQUEST,
 	JETPACK_PARTNER_PORTAL_LICENSES_RECEIVE,
 } from 'calypso/state/action-types';
-import { License } from 'calypso/state/partner-portal';
-import { dispatchRequest } from 'calypso/state/data-layer/wpcom-http/utils';
+import { HttpAction, License, PaginatedItems } from 'calypso/state/partner-portal';
+import { dispatchRequest as vanillaDispatchRequest } from 'calypso/state/data-layer/wpcom-http/utils';
 import { http } from 'calypso/state/data-layer/wpcom-http/actions';
 import { errorNotice } from 'calypso/state/notices/actions';
 
@@ -23,86 +22,51 @@ import 'calypso/state/partner-portal/init';
 interface APILicense {
 	license_id: number;
 	license_key: string;
-	issued_at: string;
-	attached_at: string;
-	revoked_at: string;
-	domain: string;
+	product_id: number;
 	product: string;
-	username: string;
-	blog_id: number;
+	user_id: number | null;
+	username: string | null;
+	blog_id: number | null;
+	siteurl: string | null;
+	issued_at: string;
+	attached_at: string | null;
+	revoked_at: string | null;
 }
 
-function fetchLicenses( action: AnyAction ) {
+interface APIPaginatedItems< T > {
+	current_items: number;
+	current_page: number;
+	items: T[];
+	items_per_page: number;
+	total_items: number;
+	total_pages: number;
+}
+
+interface APIItemFormatter< FormattedType, APIType > {
+	( items: APIType[] ): FormattedType[];
+}
+
+// Avoid TypeScript warnings and be explicit about the type of dispatchRequest being mostly unknown.
+const dispatchRequest = vanillaDispatchRequest as ( options: unknown ) => unknown;
+
+function fetchLicenses( action: HttpAction ) {
 	return http(
 		{
 			method: 'GET',
 			apiNamespace: 'wpcom/v2',
 			path: '/jetpack-licensing/licenses',
-			query: {
-				key_id: action.keyId,
+			options: {
+				authToken: action.authToken,
 			},
 		},
 		action
 	);
 }
 
-function receiveLicenses( action: AnyAction, licenses: License[] ) {
-	const data: APILicense[] = [
-		{
-			license_id: 1,
-			license_key: 'jetpack-security-daily_AcNAyEhPaSXeFVgRj0gZkgn0Z',
-			issued_at: '2020-11-26 15:24:02',
-			attached_at: '2021-11-26 15:24:08',
-			revoked_at: '',
-			domain: 'yetanothersite.net',
-			product: 'Jetpack Security Daily',
-			username: 'ianramosc',
-			blog_id: 883882032,
-		},
-		{
-			license_id: 2,
-			license_key: 'jetpack-backup-daily_AcNAyEhPaSXeFVgRj0gZkgn0Z',
-			issued_at: '2021-11-25 15:24:08',
-			attached_at: '',
-			revoked_at: '',
-			domain: '',
-			product: 'Jetpack Backup Daily',
-			username: 'ianramosc',
-			blog_id: 883882032,
-		},
-		{
-			license_id: 3,
-			license_key: 'jetpack-security-realtime_AcNAyEhPaSXeFVgRj0gZkgn0Z',
-			issued_at: '2021-11-23 15:24:08',
-			attached_at: '2021-11-23 15:25:08',
-			revoked_at: '',
-			domain: 'mygroovysite.co.uk',
-			product: 'Jetpack Security Real-time',
-			username: 'ianramosc',
-			blog_id: 883882032,
-		},
-		{
-			license_id: 4,
-			license_key: 'jetpack-anti-spam_AcNAyEhPaSXeFVgRj0gZkgn0Z',
-			issued_at: '2021-01-21 15:24:08',
-			attached_at: '2021-11-21 15:24:18',
-			revoked_at: '2021-01-22 15:24:33',
-			domain: 'mylicenselesssite.com',
-			product: 'Jetpack Anti-Spam',
-			username: 'ianramosc',
-			blog_id: 883882032,
-		},
-	];
-
-	// Stub data.
+function receiveLicenses( action: AnyAction, paginatedLicenses: PaginatedItems< License > ) {
 	return {
 		type: JETPACK_PARTNER_PORTAL_LICENSES_RECEIVE,
-		licenses: shuffle( formatLicenses( data ) ),
-	};
-
-	return {
-		type: JETPACK_PARTNER_PORTAL_LICENSES_RECEIVE,
-		licenses,
+		paginatedLicenses,
 	};
 }
 
@@ -110,18 +74,34 @@ function receiveLicensesError() {
 	return errorNotice( translate( 'Failed to retrieve your licenses. Please try again later.' ) );
 }
 
-function formatLicenses( licenses: APILicense[] ): License[] {
-	return licenses.map( ( license ) => ( {
-		licenseId: license.license_id,
-		licenseKey: license.license_key,
-		issuedAt: license.issued_at,
-		attachedAt: license.attached_at,
-		revokedAt: license.revoked_at,
-		domain: license.domain,
-		product: license.product,
-		username: license.username,
-		blogId: license.blog_id,
+function formatLicenses( items: APILicense[] ): License[] {
+	return items.map( ( item ) => ( {
+		licenseId: item.license_id,
+		licenseKey: item.license_key,
+		product: item.product,
+		productId: item.product_id,
+		userId: item.user_id,
+		username: item.username,
+		blogId: item.blog_id,
+		siteUrl: item.siteurl,
+		issuedAt: item.issued_at,
+		attachedAt: item.attached_at,
+		revokedAt: item.revoked_at,
 	} ) );
+}
+
+function formatPaginatedItems< FormattedType, APIType >(
+	itemFormatter: APIItemFormatter< FormattedType, APIType >,
+	paginatedItems: APIPaginatedItems< APIType >
+): PaginatedItems< FormattedType > {
+	return {
+		currentItems: paginatedItems.current_items,
+		currentPage: paginatedItems.current_page,
+		items: itemFormatter( paginatedItems.items ),
+		itemsPerPage: paginatedItems.items_per_page,
+		totalItems: paginatedItems.total_items,
+		totalPages: paginatedItems.total_pages,
+	};
 }
 
 export default {
@@ -130,7 +110,8 @@ export default {
 			fetch: fetchLicenses,
 			onSuccess: receiveLicenses,
 			onError: receiveLicensesError,
-			fromApi: formatLicenses,
+			fromApi: ( paginatedItems: APIPaginatedItems< APILicense > ) =>
+				formatPaginatedItems( formatLicenses, paginatedItems ),
 		} ),
 	],
 };

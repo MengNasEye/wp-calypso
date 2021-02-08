@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { License, PartnerPortalStore } from 'calypso/state/partner-portal';
+import { License, PaginatedItems, PartnerPortalStore } from 'calypso/state/partner-portal';
 // Required for modular state.
 import 'calypso/state/partner-portal/init';
 
@@ -13,6 +13,8 @@ export function isFetchingLicenses( state: PartnerPortalStore ): boolean {
 	return state.partnerPortal.licenses.isFetching;
 }
 
-export function getLicenses( state: PartnerPortalStore ): License[] {
-	return state.partnerPortal.licenses.all;
+export function getPaginatedLicenses(
+	state: PartnerPortalStore
+): PaginatedItems< License > | null {
+	return state.partnerPortal.licenses.paginated;
 }

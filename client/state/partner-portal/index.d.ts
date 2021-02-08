@@ -1,9 +1,33 @@
+/**
+ * External dependencies
+ */
+import { AnyAction } from 'redux';
+
+/**
+ * Utility.
+ */
+interface HttpAction extends AnyAction {
+	authToken: string;
+}
+
+export interface PaginatedItems< T > {
+	currentItems: number;
+	currentPage: number;
+	items: T[];
+	itemsPerPage: number;
+	totalItems: number;
+	totalPages: number;
+}
+
 export interface APIError {
 	status: number;
 	code: string | null;
 	message: string;
 }
 
+/**
+ * Store.
+ */
 export interface PartnerKey {
 	id: number;
 	name: string;
@@ -29,19 +53,21 @@ export interface PartnerStore {
 export interface License {
 	licenseId: number;
 	licenseKey: string;
-	issuedAt: string;
-	attachedAt: string;
-	revokedAt: string;
-	domain: string;
+	productId: number;
 	product: string;
-	username: string;
-	blogId: number;
+	userId: number | null;
+	username: string | null;
+	blogId: number | null;
+	siteUrl: string | null;
+	issuedAt: string;
+	attachedAt: string | null;
+	revokedAt: string | null;
 }
 
 export interface LicensesStore {
 	hasFetched: boolean;
 	isFetching: boolean;
-	all: License[];
+	paginated: PaginatedItems< License > | null;
 }
 
 export interface PartnerPortalStore {

@@ -3,6 +3,7 @@
  */
 import React, { useState, useCallback, ReactElement } from 'react';
 import { useTranslate } from 'i18n-calypso';
+import { getUrlParts } from 'calypso/lib/url';
 import classnames from 'classnames';
 
 /**
@@ -28,18 +29,18 @@ import './style.scss';
 
 interface Props {
 	licenseKey: string;
-	domain: string;
 	product: string;
+	username: string | null;
+	blogId: number | null;
+	siteUrl: string | null;
 	issuedAt: string;
-	attachedAt: string;
-	revokedAt: string;
-	username: string;
-	blogId: number;
+	attachedAt: string | null;
+	revokedAt: string | null;
 }
 
 export default function LicensePreview( {
 	licenseKey,
-	domain,
+	siteUrl,
 	product,
 	issuedAt,
 	attachedAt,
@@ -50,6 +51,7 @@ export default function LicensePreview( {
 	const translate = useTranslate();
 	const [ isOpen, setOpen ] = useState( false );
 	const licenseState = getLicenseState( attachedAt, revokedAt );
+	const domain = siteUrl ? getUrlParts( siteUrl ).hostname : '';
 	const showDomain = domain && [ STATE_ATTACHED, STATE_REVOKED ].indexOf( licenseState ) !== -1;
 
 	const open = useCallback( () => {
@@ -147,11 +149,11 @@ export default function LicensePreview( {
 			{ isOpen && (
 				<LicenseDetails
 					licenseKey={ licenseKey }
-					issuedOn={ issuedAt }
-					attachedOn={ attachedAt }
-					revokedOn={ revokedAt }
 					username={ username }
 					blogId={ blogId }
+					issuedAt={ issuedAt }
+					attachedAt={ attachedAt }
+					revokedAt={ revokedAt }
 				/>
 			) }
 		</div>

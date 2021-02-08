@@ -15,7 +15,7 @@ import { combineReducers, withoutPersistence } from 'calypso/state/utils';
 export const initialState = {
 	hasFetched: false,
 	isFetching: false,
-	all: [],
+	paginated: null,
 };
 
 export const hasFetched = withoutPersistence(
@@ -43,17 +43,19 @@ export const isFetching = withoutPersistence(
 	}
 );
 
-export const all = withoutPersistence( ( state = initialState.all, action: AnyAction ) => {
-	switch ( action.type ) {
-		case JETPACK_PARTNER_PORTAL_LICENSES_RECEIVE:
-			return action.licenses;
-	}
+export const paginated = withoutPersistence(
+	( state = initialState.paginated, action: AnyAction ) => {
+		switch ( action.type ) {
+			case JETPACK_PARTNER_PORTAL_LICENSES_RECEIVE:
+				return action.paginatedLicenses;
+		}
 
-	return state;
-} );
+		return state;
+	}
+);
 
 export default combineReducers( {
 	hasFetched,
 	isFetching,
-	all,
+	paginated,
 } );

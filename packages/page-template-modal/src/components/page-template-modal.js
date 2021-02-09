@@ -21,6 +21,7 @@ import containsMissingBlock from '../utils/contains-missing-block';
 export default class PageTemplateModal extends Component {
 	state = {
 		isLoading: false,
+		selectedCategory: null,
 		error: null,
 	};
 
@@ -219,6 +220,10 @@ export default class PageTemplateModal extends Component {
 		this.setTemplate( name );
 	};
 
+	handleCategorySelection = ( selectedCategory ) => {
+		this.setState( { selectedCategory } );
+	};
+
 	closeModal = ( event ) => {
 		// Check to see if the Blur event occurred on the buttons inside of the Modal.
 		// If it did then we don't want to dismiss the Modal for this type of Blur.
@@ -336,6 +341,29 @@ export default class PageTemplateModal extends Component {
 		);
 	};
 
+	getTemplateCategories = () => {
+		const unfilteredGroups = this.getTemplateGroups();
+		const groups = ! this.props.isFrontPage
+			? unfilteredGroups
+			: omit( unfilteredGroups, 'home-page' );
+
+		if ( ! groups ) {
+			return null;
+		}
+
+		const categories = [];
+
+		if ( this.props.isFrontPage ) {
+			categories.push( { slug: 'home-page', name: __( 'Home Page', __i18n_text_domain__ ) } );
+		}
+
+		for ( const key in groups ) {
+			categories.push( { slug: key, name: groups[ key ].title } );
+		}
+
+		return categories;
+	};
+
 	renderTemplateGroup = ( groupName, groupTitle ) => {
 		const templates = this.getTemplatesForGroup( groupName );
 
@@ -401,7 +429,7 @@ export default class PageTemplateModal extends Component {
 	};
 
 	render() {
-		const { isLoading } = this.state;
+		const { isLoading, selectedCategory } = this.state;
 		const { isOpen, currentBlocks } = this.props;
 
 		if ( ! isOpen ) {
@@ -456,13 +484,38 @@ export default class PageTemplateModal extends Component {
 								<Button onClick={ () => this.handleSelection( 'blank' ) }>
 									{ __( 'Blank page', __i18n_text_domain__ ) }
 								</Button>
-								{ this.renderTemplateGroups() }
+								<ul>
+									{ this.getTemplateCategories().map( ( { slug, name } ) => (
+										<li key={ slug }>
+											<Button onClick={ () => this.handleCategorySelection( slug ) }>
+												{ name }
+											</Button>
+										</li>
+									) ) }
+								</ul>
+								{ /* { this.renderTemplateGroups() } */ }
 							</div>
-							<TemplateSelectorPreview
+							<div className="page-template-modal__template-list-container">
+								{ this.renderTemplateGroup(
+									selectedCategory,
+									this.getTemplateGroups()[ selectedCategory ]?.title
+								) }
+							</div>
+							{ /* // <TemplateSelectorControl
+							// 	label={ __( 'Layout', __i18n_text_domain__ ) }
+							// 	legendLabel={ this.getTemplateGroups()[ selectedCategory ].title }
+							// 	templates={ filteredTemplatesList }
+							// 	blocksByTemplates={ blocksByTemplateSlug }
+							// 	onTemplateSelect={ this.handleSelection }
+							// 	theme={ this.props.theme }
+							// 	locale={ this.props.locale }
+							// 	siteInformation={ this.props.siteInformation }
+							// /> */ }
+							{ /* <TemplateSelectorPreview
 								blocks={ this.getBlocksForPreview( null ) }
 								viewportWidth={ 1200 }
 								title={ this.props.currentPostTitle }
-							/>
+							/> */ }
 						</>
 					) }
 				</div>

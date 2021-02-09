@@ -232,8 +232,7 @@ $accent-blue: #117ac9;
 }
 
 .domain-picker__suggestion-item-name {
-	flex-grow: 1;
-	flex-basis: 2px;
+	width: max-content;
 	letter-spacing: 0.4px;
 	// smaller gap between domain name and price on mobile
 	margin-right: 10px;
@@ -256,7 +255,7 @@ $accent-blue: #117ac9;
 
 	&.placeholder {
 		@include onboarding-placeholder();
-		max-width: 30%;
+		width: 30%;
 		margin-right: auto; // position the placeholder to the left overriding justify-content: space-between
 	}
 }
@@ -347,8 +346,6 @@ $accent-blue: #117ac9;
 .domain-picker__price {
 	color: var( --studio-gray-40 );
 	text-align: right;
-	flex-basis: 0;
-	flex-grow: 1;
 	transition: opacity 200ms ease-in-out;
 	// Don't show free text on mobile view
 	&:not( .is-paid ) {
@@ -361,8 +358,6 @@ $accent-blue: #117ac9;
 	}
 
 	@include break-small {
-		flex-basis: 1px;
-
 		&:not( .is-paid ) {
 			display: inline;
 		}

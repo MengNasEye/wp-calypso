@@ -2,8 +2,7 @@
  * External dependencies
  */
 import { find, isEmpty, reduce, get, keyBy, mapValues, memoize, omit } from 'lodash';
-import { __, sprintf } from '@wordpress/i18n';
-import classnames from 'classnames';
+import { __ } from '@wordpress/i18n';
 import { Button, Modal, Spinner, IconButton } from '@wordpress/components';
 import { Component } from '@wordpress/element';
 import { parse as parseBlocks } from '@wordpress/blocks';
@@ -22,7 +21,6 @@ import containsMissingBlock from '../utils/contains-missing-block';
 export default class PageTemplateModal extends Component {
 	state = {
 		isLoading: false,
-		previewedTemplate: null,
 		error: null,
 	};
 
@@ -217,27 +215,8 @@ export default class PageTemplateModal extends Component {
 		return this.props.shouldPrefetchAssets ? ensureAssets( blocks ) : Promise.resolve( blocks );
 	};
 
-	handleConfirmation = ( name ) => {
-		if ( typeof name !== 'string' ) {
-			name = this.state.previewedTemplate;
-		}
-
+	handleSelection = ( name ) => {
 		this.setTemplate( name );
-	};
-
-	previewTemplate = ( name ) => {
-		this.setState( { previewedTemplate: name } );
-
-		/**
-		 * Determines (based on whether the large preview is able to be visible at the
-		 * current breakpoint) whether or not the Template selection UI interaction model
-		 * should be select _and_ confirm or simply a single "tap to confirm".
-		 */
-		const largeTplPreviewVisible = window.matchMedia( '(min-width: 660px)' ).matches;
-		// Confirm the template when large preview isn't visible
-		if ( ! largeTplPreviewVisible ) {
-			this.handleConfirmation( name );
-		}
 	};
 
 	closeModal = ( event ) => {
@@ -412,19 +391,18 @@ export default class PageTemplateModal extends Component {
 					legendLabel={ groupTitle }
 					templates={ filteredTemplatesList }
 					blocksByTemplates={ blocksByTemplateSlug }
-					onTemplateSelect={ this.previewTemplate }
+					onTemplateSelect={ this.handleSelection }
 					theme={ this.props.theme }
 					locale={ this.props.locale }
 					siteInformation={ this.props.siteInformation }
-					selectedTemplate={ this.state.previewedTemplate }
 				/>
 			</fieldset>
 		);
 	};
 
 	render() {
-		const { previewedTemplate, isLoading } = this.state;
-		const { hidePageTitle, isOpen, currentBlocks } = this.props;
+		const { isLoading } = this.state;
+		const { isOpen, currentBlocks } = this.props;
 
 		if ( ! isOpen ) {
 			return null;
@@ -467,35 +445,26 @@ export default class PageTemplateModal extends Component {
 						</div>
 					) : (
 						<>
-							<form className="page-template-modal__form">{ this.renderTemplateGroups() }</form>
+							<div className="page-template-modal__sidebar">
+								<h1>{ __( 'Add a page', __i18n_text_domain__ ) }</h1>
+								<p>
+									{ __(
+										'Pick a pre-defined layout or start with a blank page.',
+										__i18n_text_domain__
+									) }
+								</p>
+								<Button onClick={ () => this.handleSelection( 'blank' ) }>
+									{ __( 'Blank page', __i18n_text_domain__ ) }
+								</Button>
+								{ this.renderTemplateGroups() }
+							</div>
 							<TemplateSelectorPreview
-								blocks={ this.getBlocksForPreview( previewedTemplate ) }
+								blocks={ this.getBlocksForPreview( null ) }
 								viewportWidth={ 1200 }
-								title={
-									! hidePageTitle && previewedTemplate === 'current'
-										? this.props.currentPostTitle
-										: this.getTitleByTemplateSlug( previewedTemplate )
-								}
+								title={ this.props.currentPostTitle }
 							/>
 						</>
 					) }
-				</div>
-				<div
-					className={ classnames( 'page-template-modal__buttons', {
-						'is-visually-hidden': isEmpty( previewedTemplate ) || isLoading,
-					} ) }
-				>
-					<Button
-						isPrimary
-						disabled={ isEmpty( previewedTemplate ) || isLoading }
-						onClick={ this.handleConfirmation }
-					>
-						{ sprintf(
-							/* translators: %s is name of a page layout. Eg: Dalston or Blank. */
-							__( 'Use %s layout', __i18n_text_domain__ ),
-							this.getTitleByTemplateSlug( previewedTemplate )
-						) }
-					</Button>
 				</div>
 			</Modal>
 		);

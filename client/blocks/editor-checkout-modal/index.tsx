@@ -69,7 +69,7 @@ const EditorCheckoutModal: React.FunctionComponent< Props > = ( props ) => {
 	// redirected to the plans page due to an empty cart
 	const productSlugs =
 		// check if the cart is empty (i.e no products)
-		! cartData || cartData.products.length < 1
+		! cartData?.products || cartData.products.length < 1
 			? null
 			: cartData.products.map( ( product ) => product.product_slug );
 	const commaSeparatedProductSlugs = productSlugs?.join( ',' );

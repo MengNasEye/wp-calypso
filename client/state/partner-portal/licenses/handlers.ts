@@ -14,6 +14,7 @@ import {
 import { HttpAction, License, PaginatedItems } from 'calypso/state/partner-portal';
 import { dispatchRequest as vanillaDispatchRequest } from 'calypso/state/data-layer/wpcom-http/utils';
 import { http } from 'calypso/state/data-layer/wpcom-http/actions';
+import { NoticeAction } from 'calypso/state/notices/types';
 import { errorNotice } from 'calypso/state/notices/actions';
 
 // Required for modular state.
@@ -49,7 +50,7 @@ interface APIItemFormatter< FormattedType, APIType > {
 // Avoid TypeScript warnings and be explicit about the type of dispatchRequest being mostly unknown.
 const dispatchRequest = vanillaDispatchRequest as ( options: unknown ) => unknown;
 
-export function fetchLicenses( action: HttpAction ) {
+export function fetchLicenses( action: HttpAction ): AnyAction {
 	return http(
 		{
 			method: 'GET',
@@ -60,17 +61,20 @@ export function fetchLicenses( action: HttpAction ) {
 			},
 		},
 		action
-	);
+	) as AnyAction;
 }
 
-export function receiveLicenses( action: AnyAction, paginatedLicenses: PaginatedItems< License > ) {
+export function receiveLicenses(
+	action: AnyAction,
+	paginatedLicenses: PaginatedItems< License >
+): AnyAction {
 	return {
 		type: JETPACK_PARTNER_PORTAL_LICENSES_RECEIVE,
 		paginatedLicenses,
 	};
 }
 
-export function receiveLicensesError() {
+export function receiveLicensesError(): NoticeAction {
 	return errorNotice( translate( 'Failed to retrieve your licenses. Please try again later.' ) );
 }
 

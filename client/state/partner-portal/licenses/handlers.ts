@@ -49,7 +49,7 @@ interface APIItemFormatter< FormattedType, APIType > {
 // Avoid TypeScript warnings and be explicit about the type of dispatchRequest being mostly unknown.
 const dispatchRequest = vanillaDispatchRequest as ( options: unknown ) => unknown;
 
-function fetchLicenses( action: HttpAction ) {
+export function fetchLicenses( action: HttpAction ) {
 	return http(
 		{
 			method: 'GET',
@@ -63,14 +63,14 @@ function fetchLicenses( action: HttpAction ) {
 	);
 }
 
-function receiveLicenses( action: AnyAction, paginatedLicenses: PaginatedItems< License > ) {
+export function receiveLicenses( action: AnyAction, paginatedLicenses: PaginatedItems< License > ) {
 	return {
 		type: JETPACK_PARTNER_PORTAL_LICENSES_RECEIVE,
 		paginatedLicenses,
 	};
 }
 
-function receiveLicensesError() {
+export function receiveLicensesError() {
 	return errorNotice( translate( 'Failed to retrieve your licenses. Please try again later.' ) );
 }
 

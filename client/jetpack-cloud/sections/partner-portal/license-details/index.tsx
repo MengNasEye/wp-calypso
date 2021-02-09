@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { ReactElement } from 'react';
 import { useTranslate } from 'i18n-calypso';
 
 /**
@@ -39,7 +39,7 @@ export default function LicenseDetails( {
 	issuedAt,
 	attachedAt,
 	revokedAt,
-}: Props ) {
+}: Props ): ReactElement {
 	const translate = useTranslate();
 	const licenseState = getLicenseState( attachedAt, revokedAt );
 

@@ -554,11 +554,10 @@ const Summary: React.FunctionComponent = () => {
 	}, [ title, showSiteTitleStep, isSiteTitleStepVisible ] );
 
 	const handleLaunch = () => {
-		launchSite( siteId );
-		if ( selectedDomain || ! isSelectedPlanFree ) {
-			goToCheckout();
-		} else {
+		if ( ! selectedDomain && isSelectedPlanFree ) {
 			launchSite( siteId );
+		} else {
+			goToCheckout();
 		}
 	};
 
